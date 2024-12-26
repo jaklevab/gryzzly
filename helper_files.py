@@ -76,7 +76,6 @@ def load_declarations(data_dir):
     df_decs = df_decs\
         .merge(pd.read_csv(data_dir + "tasks.csv", usecols=["id", "project_id"]).rename({"id": "task_id"}, axis=1))\
         .merge(pd.read_csv(data_dir + "users.csv", usecols=["id", "team_id"]).rename({"id": "user_id"}, axis=1))
-    #   .merge(pd.read_csv(data_dir + "subscriptions.csv", usecols=["team_id"]))
     
     # Filter rows with valid dates and durations
     df_decs = df_decs[(~df_decs.created_at.isna()) & (~df_decs.declared_at.isna())]
