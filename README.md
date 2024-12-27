@@ -1,12 +1,9 @@
 # Seven years of project time-tracking data from Gryzzly capturing dynamics of collaboration and project failure
-This repository contains code related to the paper [Seven years of project time-tracking data from Gryzzly capturing dynamics of collaboration and project failure](https://github.com/jaklevab/gryzzly/edit/main/README.md) (currently in submission).
-
-This repository contains the code needed to prepare the data and reproduce the analysis on project failure and its drivers.
+This repository contains code related to the paper [Seven years of project time-tracking data from Gryzzly capturing dynamics of collaboration and project failure](https://github.com/jaklevab/gryzzly/) (currently in submission) needed to prepare the data and reproduce the analysis on project failure and its drivers.
 
 <p float="left">
   <img src="./figures/project_task_failure.png" type="application/pdf" width="99%"/>
 </p>
-
 
 Setup
 -----
@@ -16,16 +13,7 @@ This project uses mostly Python . To replicate our results, using pip, set up th
 Datasets folders
 ----------------
 
-This project relies upon seven datasets. 
-
-* __Declarations Dataset__
-
-* __User and Teams Datasets__
-
-* __Task and Task Computation Datasets__
-
-* __Project and Project Computation Datasets__
-As a result, your dataset folder should look like the following:
+This project relies upon seven datasets that should be downloaded from the accompanying [figshare](https://figshare.com/) repository and added to the ``data`` folder. It should therefore look like the following:
 ```
 data
 ├── declarations.csv
