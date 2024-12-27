@@ -4,7 +4,7 @@ This repository contains code related to the paper [Seven years of project time-
 This repository contains the code needed to prepare the data and reproduce the analysis on project failure and its drivers.
 
 <p float="left">
-  <img src="./figures/project_fail_overview.png" type="application/pdf" width="99%"/>
+  <img src="./figures/project_task_failure.png" type="application/pdf" width="99%"/>
 </p>
 
 
@@ -54,7 +54,7 @@ figures
 Analysis
 --------
 Once the datasets are compiled and the environment is compiled, you can run the notebook to reproduce the paper figures. 
-Computations were done on an IntelR XeonR CPU E5-2643 v3 @ 3.40GHz with 40GB RAM. The notebook execution took less approximately 40 minutes
+Computations were done on an IntelR XeonR CPU E5-2643 v3 @ 3.40GHz with 40GB RAM. The notebook execution took  approximately 40 minutes.
 
 ### Citation
 If you use the code, data, or analysis results in this paper, we kindly ask that you cite the paper above as:
