@@ -5,10 +5,21 @@ This repository contains code related to the paper [Seven years of project time-
   <img src="./figures/project_task_failure.png" type="application/pdf" width="99%"/>
 </p>
 
-Setup
+Project Environment Setup
 -----
 
-This project uses mostly Python . To replicate our results, using pip, set up the environment  with the provided with `pip install -r requirements.txt` (this builds the python extensions in this package, and installs them locally).
+This project uses Python to replicate the results. Follow these steps to create and activate a **conda** environment with Python 3.8, then install the required packages from `requirements.txt`. This will also build and install any necessary Python extensions included in this package.
+
+```bash
+# 1. Create a conda environment with Python 3.8
+conda create -n myenv python=3.8
+
+# 2. Activate the newly created environment
+conda activate myenv
+
+# 3. Install the project dependencies
+pip install -r requirements.txt
+```
 
 Datasets folders
 ----------------
@@ -41,8 +52,8 @@ figures
 
 Analysis
 --------
-Once the datasets are compiled and the environment is compiled, you can run the notebook to reproduce the paper figures. 
-Computations were done on an IntelR XeonR CPU E5-2643 v3 @ 3.40GHz with 40GB RAM. The notebook execution took  approximately 40 minutes.
+Once the datasets are compiled and the environment is compiled, you can run the notebook to reproduce the paper figures. In order to do so, launch a Jupyter notebook server and run the notebook ``Figures.ipynb``.
+All computations were performed on a 3.2 GHz Apple M1 processor (8 cores, 8 GB RAM), and the notebook took approximately **27 minutes** to execute.
 
 ### Citation
 If you use the code, data, or analysis results in this paper, we kindly ask that you cite the paper above as:
