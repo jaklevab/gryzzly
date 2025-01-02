@@ -1,5 +1,5 @@
-# Seven years of project time-tracking data from Gryzzly capturing dynamics of collaboration and project failure
-This repository contains code related to the paper [Seven years of project time-tracking data from Gryzzly capturing dynamics of collaboration and project failure](https://github.com/jaklevab/gryzzly/) (currently in submission) needed to prepare the data and reproduce the analysis on project failure and its drivers.
+# Seven Years of Project Time-Tracking Data Capturing Collaboration and Failure Dynamics: The Gryzzly Dataset
+This repository contains code related to the paper [Seven Years of Project Time-Tracking Data Capturing Collaboration and Failure Dynamics: The Gryzzly Dataset](https://github.com/jaklevab/gryzzly/) (currently in submission) needed to prepare the data and reproduce the analysis on project failure and its drivers.
 
 <p float="left">
   <img src="./figures/project_task_failure.png" type="application/pdf" width="99%"/>
@@ -58,4 +58,4 @@ All computations were performed on a 3.2 GHz Apple M1 processor (8 cores, 8�
 ### Citation
 If you use the code, data, or analysis results in this paper, we kindly ask that you cite the paper above as:
 
-> _Seven years of project time-tracking data from Gryzzly capturing dynamics of collaboration and project failure_ , J. Levy Abitbol, L. Arod, 2024, .
+> _Seven Years of Project Time-Tracking Data Capturing Collaboration and Failure Dynamics: The Gryzzly Dataset_ , J. Levy Abitbol, L. Arod, 2024, .
