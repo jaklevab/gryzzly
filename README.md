@@ -42,10 +42,10 @@ data
 └── clean_data.sh 	 # Cleaning file used to export the figshare dataset
 
 figures
-├── circ_ccdf_hour_iet.pdf    # Figure 2
+├── circ_ccdf_hour_iet.pdf    # Figure 4
 ├── failure_streaks.pdf       # Figure 5      
 └── forest_plot.pdf           # Figure 7    
-└── network_stats.pdf         # Figure 4         
+└── network_stats.pdf         # Figure 2         
 └── project_fail_overview.pdf # Figure 3              
 └── project_task_failure.pdf  # Figure 6  
 ```
