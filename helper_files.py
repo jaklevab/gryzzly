@@ -150,10 +150,9 @@ def get_zero_sequences_lengths(lst):
     for num in lst:
         if num == 0:
             count += 1
-        else:
-            if count > 0:
-                lengths.append(count)  # Add count if a zero sequence ends.
-                count = 0
+        elif count > 0:
+            lengths.append(count)  # Add count if a zero sequence ends.
+            count = 0
     # Append the last count if the list ends with zeros.
     if count > 0:
         lengths.append(count)
