@@ -24,9 +24,9 @@ pip install -r requirements.txt
 Datasets folders
 ----------------
 
-This project relies upon seven datasets that should be downloaded from the accompanying [figshare](https://figshare.com/) repository and added to the ``data`` folder. It should therefore look like the following:
+This project relies upon seven datasets that should be downloaded from the accompanying [figshare](https://doi.org/10.6084/m9.figshare.28114247.v2) repository and added to the ``dataset`` folder. It should therefore look like the following:
 ```
-data
+dataset
 ├── declarations.csv
 ├── users.csv
 ├── teams.csv
