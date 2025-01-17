@@ -53,7 +53,7 @@ figures
 Analysis
 --------
 Once the datasets are compiled and the environment is compiled, you can run the notebook to reproduce the paper figures. In order to do so, launch a Jupyter notebook server and run the notebook ``Figures.ipynb``.
-All computations were performed on a 3.2 GHz Apple M1 processor (8 cores, 8 GB RAM), and the notebook took approximately **27 minutes** to execute.
+All computations were performed on a 3.2 GHz Apple M1 processor (8 cores, 8 GB RAM), and the notebook took approximately **21 minutes** to execute.
 
 ### Citation
 If you use the code, data, or analysis results in this paper, we kindly ask that you cite the paper above as:
