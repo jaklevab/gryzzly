@@ -58,4 +58,4 @@ All computations were performed on a 3.2 GHz Apple M1 processor (8 cores, 8�
 ### Citation
 If you use the code, data, or analysis results in this paper, we kindly ask that you cite the paper above as:
 
-> _Seven Years of Project Time-Tracking Data Capturing Collaboration and Failure Dynamics: The Gryzzly Dataset_ , J. Levy Abitbol, L. Arod, 2024, .
+> _Seven Years of Time-Tracking Data Capturing Collaboration and Failure Dynamics: The Gryzzly Dataset_ , J. Levy Abitbol, L. Arod, 2024, .
