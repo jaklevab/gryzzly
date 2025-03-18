@@ -75,7 +75,8 @@ def load_declarations(data_dir):
     # Merge with other datasets
     df_decs = df_decs\
         .merge(pd.read_csv(data_dir + "tasks.csv", usecols=["id", "project_id"]).rename({"id": "task_id"}, axis=1))\
-        .merge(pd.read_csv(data_dir + "users.csv", usecols=["id", "team_id"]).rename({"id": "user_id"}, axis=1))
+        .merge(pd.read_csv(data_dir + "users.csv", usecols=["id", "team_id"]).rename({"id": "user_id"}, axis=1))\
+        .merge(pd.read_csv(data_dir + "subscriptions.csv", usecols=["team_id"]))
     
     # Filter rows with valid dates and durations
     df_decs = df_decs[(~df_decs.created_at.isna()) & (~df_decs.declared_at.isna())]
@@ -110,14 +111,133 @@ def convert_to_hours(duration):
     return hours + minutes / 60 + seconds / 3600
 
 
-def ccdf_dist(df_decs, x, y):
+def pdf_dist(
+    df_decs, x, y, nbins=20, noise_fraction=0.1, min_noise=0.35, min_count_tail=2
+):
     """
-    Calculate CCDF distribution for a column grouped by another.
+    Calculate a log-binned PDF distribution for a column grouped by another,
+    with bins adjusted to integer boundaries to avoid empty bins due to 
+    the discrete (integer) nature of the distribution. The centers of each bin 
+    are given random noise to prevent overlapping points when multiple 
+    points fall at the same value.
+
+    After binning:
+      1) Trailing bins with zero counts are removed.
+      2) If the total count in the final bins is below 'min_count_tail',
+         they are merged into a single bin. This avoids a 'spiky' or 
+         fragmented tail (e.g., alternating 0 and 1 counts).
+
+    Parameters
+    ----------
+    df_decs : pandas.DataFrame
+        The input dataframe.
+    x : str
+        The column name to group by.
+    y : str
+        The column for which to compute unique counts per group.
+    nbins : int, optional
+        The desired number of logarithmic bins (default is 20).
+    noise_fraction : float, optional
+        Fraction of the bin width to use as noise amplitude (default is 0.05).
+    min_noise : float, optional
+        The minimum noise amplitude to ensure sufficient jitter (default is 0.35).
+    min_count_tail : int, optional
+        If the total counts in the tail bins (from the last bin backward)
+        is below this threshold, merge them into one bin (default is 2).
+
+    Returns
+    -------
+    bin_centers : np.ndarray
+        The (noisy) bin centers after any removals/merging.
+    counts : np.ndarray
+        The counts per bin after any removals/merging.
+    edges : np.ndarray
+        The final (integer) bin edges.
     """
-    # Compute unique counts of 'y' for each group in 'x' and calculate CCDF.
+    # 1) Group data and compute unique counts
     x_l = df_decs.groupby(x)[y].apply(lambda s: len(set(s))).values
-    y_l = ccdf(x_l)
-    return range(min(x_l), max(x_l)), y_l
+    # Filter out zeros (log(0) undefined in log-binning)
+    x_l = x_l[x_l > 0]
+    if len(x_l) == 0:
+        return None, None, None
+
+    # 2) Create integer bin edges via log spacing
+    min_val = int(x_l.min())
+    max_val = int(x_l.max())
+
+    raw_bins = np.logspace(np.log10(min_val), np.log10(max_val), nbins + 1)
+    int_bins = np.unique(np.floor(raw_bins).astype(int))
+    if int_bins[-1] <= max_val:
+        int_bins = np.append(int_bins, max_val + 1)
+
+    # 3) Histogram
+    counts, edges = np.histogram(x_l, bins=int_bins)
+
+    # 4) Bin centers + noise
+    bin_centers = 0.5 * (edges[:-1] + edges[1:])
+    widths = edges[1:] - edges[:-1]
+    noise_amplitude = np.maximum(noise_fraction * widths, min_noise)
+    noise = np.random.uniform(-noise_amplitude, noise_amplitude)
+    bin_centers_noisy = bin_centers + noise
+
+    # ----------------------------------------------------------------------
+    # 5) Remove trailing empty bins
+    # ----------------------------------------------------------------------
+    while len(counts) > 0 and counts[-1] == 0:
+        counts = counts[:-1]
+        edges = edges[:-1]
+        bin_centers_noisy = bin_centers_noisy[:-1]
+
+    # If everything got removed, return
+    if len(counts) == 0:
+        return None, None, None
+
+    # ----------------------------------------------------------------------
+    # 6) Merge all tail bins whose total is below 'min_count_tail'
+    #    We move from the last bin backward until we exceed min_count_tail
+    # ----------------------------------------------------------------------
+    tail_sum = 0
+    tail_start = len(counts) - 1  # index from which we merge the tail
+    while tail_start >= 0 and tail_sum < min_count_tail:
+        tail_sum += counts[tail_start]
+        tail_start -= 1
+
+    # tail_start is now the index of the last bin we do *not* merge.
+    # everything from (tail_start+1) to the end is merged into one bin
+    merged_length = len(counts) - (tail_start + 1)
+    if merged_length > 1:
+        # We have bins to merge
+        new_counts = counts[: tail_start + 1]
+        new_edges = edges[: tail_start + 2]
+        new_centers = bin_centers_noisy[: tail_start + 1]
+
+        # If tail_start == -1, it means all bins are merging
+        if tail_start < 0:
+            # Everything merges into one single bin
+            merged_bin_left = edges[0]
+            merged_bin_right = edges[-1]
+            # Create arrays with a single bin
+            new_counts = np.array([tail_sum])
+            new_edges = np.array([merged_bin_left, merged_bin_right])
+            new_centers = np.array([0.5 * (merged_bin_left + merged_bin_right)])
+        else:
+            # The merged bin's edges
+            merged_bin_left = edges[tail_start + 1]
+            merged_bin_right = edges[-1]
+
+            # Adjust the last edge
+            new_edges[-1] = merged_bin_right
+
+            # Create a new bin center for the merged bin
+            merged_bin_center = 0.5 * (merged_bin_left + merged_bin_right)
+
+            # Merge the tail counts
+            new_counts[-1] += tail_sum
+            new_centers[-1] = merged_bin_center
+
+        counts, edges, bin_centers_noisy = new_counts, new_edges, new_centers
+
+    return bin_centers_noisy, counts, edges
 
 
 def ser2df(ser, col_name="", idx_name=0):
@@ -150,9 +270,10 @@ def get_zero_sequences_lengths(lst):
     for num in lst:
         if num == 0:
             count += 1
-        elif count > 0:
-            lengths.append(count)  # Add count if a zero sequence ends.
-            count = 0
+        else:
+            if count > 0:
+                lengths.append(count)  # Add count if a zero sequence ends.
+                count = 0
     # Append the last count if the list ends with zeros.
     if count > 0:
         lengths.append(count)
