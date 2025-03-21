@@ -112,20 +112,18 @@ def convert_to_hours(duration):
 
 
 def pdf_dist(
-    df_decs, x, y, nbins=20, noise_fraction=0.1, min_noise=0.35, min_count_tail=2
+    df_decs, x, y, nbins=20, noise_fraction=0.0, min_noise=0.0, min_count_tail=2
 ):
     """
-    Calculate a log-binned PDF distribution for a column grouped by another,
-    with bins adjusted to integer boundaries to avoid empty bins due to 
-    the discrete (integer) nature of the distribution. The centers of each bin 
-    are given random noise to prevent overlapping points when multiple 
-    points fall at the same value.
+    Calculate a log-binned probability density function (PDF) for a column grouped by another,
+    with bins adjusted to integer boundaries to avoid empty bins due to the discrete (integer) nature
+    of the distribution. The centers of each bin are given random noise to prevent overlapping points
+    when multiple points fall at the same value.
 
     After binning:
       1) Trailing bins with zero counts are removed.
-      2) If the total count in the final bins is below 'min_count_tail',
-         they are merged into a single bin. This avoids a 'spiky' or 
-         fragmented tail (e.g., alternating 0 and 1 counts).
+      2) If the total count in the final bins is below 'min_count_tail', they are merged into a single bin.
+         This avoids a 'spiky' or fragmented tail (e.g., alternating 0 and 1 counts).
 
     Parameters
     ----------
@@ -138,9 +136,9 @@ def pdf_dist(
     nbins : int, optional
         The desired number of logarithmic bins (default is 20).
     noise_fraction : float, optional
-        Fraction of the bin width to use as noise amplitude (default is 0.05).
+        Fraction of the bin width to use as noise amplitude (default is 0.0).
     min_noise : float, optional
-        The minimum noise amplitude to ensure sufficient jitter (default is 0.35).
+        The minimum noise amplitude to ensure sufficient jitter (default is 0.0).
     min_count_tail : int, optional
         If the total counts in the tail bins (from the last bin backward)
         is below this threshold, merge them into one bin (default is 2).
@@ -149,8 +147,8 @@ def pdf_dist(
     -------
     bin_centers : np.ndarray
         The (noisy) bin centers after any removals/merging.
-    counts : np.ndarray
-        The counts per bin after any removals/merging.
+    pdf_values : np.ndarray
+        The normalized probability density function values for each bin.
     edges : np.ndarray
         The final (integer) bin edges.
     """
@@ -170,10 +168,10 @@ def pdf_dist(
     if int_bins[-1] <= max_val:
         int_bins = np.append(int_bins, max_val + 1)
 
-    # 3) Histogram
+    # 3) Compute histogram with these integer bins
     counts, edges = np.histogram(x_l, bins=int_bins)
 
-    # 4) Bin centers + noise
+    # 4) Compute bin centers and add random noise
     bin_centers = 0.5 * (edges[:-1] + edges[1:])
     widths = edges[1:] - edges[:-1]
     noise_amplitude = np.maximum(noise_fraction * widths, min_noise)
@@ -188,13 +186,12 @@ def pdf_dist(
         edges = edges[:-1]
         bin_centers_noisy = bin_centers_noisy[:-1]
 
-    # If everything got removed, return
     if len(counts) == 0:
         return None, None, None
 
     # ----------------------------------------------------------------------
-    # 6) Merge all tail bins whose total is below 'min_count_tail'
-    #    We move from the last bin backward until we exceed min_count_tail
+    # 6) Merge tail bins with low counts
+    #    Merge bins from the tail until the cumulative count exceeds 'min_count_tail'
     # ----------------------------------------------------------------------
     tail_sum = 0
     tail_start = len(counts) - 1  # index from which we merge the tail
@@ -202,42 +199,35 @@ def pdf_dist(
         tail_sum += counts[tail_start]
         tail_start -= 1
 
-    # tail_start is now the index of the last bin we do *not* merge.
-    # everything from (tail_start+1) to the end is merged into one bin
     merged_length = len(counts) - (tail_start + 1)
     if merged_length > 1:
-        # We have bins to merge
-        new_counts = counts[: tail_start + 1]
-        new_edges = edges[: tail_start + 2]
-        new_centers = bin_centers_noisy[: tail_start + 1]
-
-        # If tail_start == -1, it means all bins are merging
         if tail_start < 0:
-            # Everything merges into one single bin
+            # All bins merge into one single bin
             merged_bin_left = edges[0]
             merged_bin_right = edges[-1]
-            # Create arrays with a single bin
             new_counts = np.array([tail_sum])
             new_edges = np.array([merged_bin_left, merged_bin_right])
             new_centers = np.array([0.5 * (merged_bin_left + merged_bin_right)])
         else:
-            # The merged bin's edges
+            # Merge the tail bins
+            new_counts = counts[: tail_start + 1]
+            new_edges = edges[: tail_start + 2]
+            new_centers = bin_centers_noisy[: tail_start + 1]
             merged_bin_left = edges[tail_start + 1]
             merged_bin_right = edges[-1]
-
-            # Adjust the last edge
             new_edges[-1] = merged_bin_right
-
-            # Create a new bin center for the merged bin
             merged_bin_center = 0.5 * (merged_bin_left + merged_bin_right)
-
-            # Merge the tail counts
             new_counts[-1] += tail_sum
             new_centers[-1] = merged_bin_center
 
         counts, edges, bin_centers_noisy = new_counts, new_edges, new_centers
 
-    return bin_centers_noisy, counts, edges
+    # 7) Normalize counts to obtain the probability density function
+    widths_final = np.diff(edges)
+    total_counts = counts.sum()
+    pdf_values = counts / total_counts / widths_final
+
+    return bin_centers_noisy, pdf_values, edges
 
 
 def ser2df(ser, col_name="", idx_name=0):
